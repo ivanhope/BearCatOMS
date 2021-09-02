@@ -1,0 +1,570 @@
+{% extends 'public/home.html' %}
+{% block body %}
+
+<div class="portlet box grey tasks-widget">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-globe"></i>{{ page_name2 }}
+        </div>
+    </div>
+    <div class="portlet-body">
+<!-- vue -->
+    {% verbatim a %}
+        <div id="app">
+            <datatable></datatable>
+        </div>
+    </div>
+</div>
+
+
+<template id="tmp1">
+    <div>
+    <!-- 数据表 -->
+      <el-col :span="4" :offset="20"><el-input
+          clearable
+          v-model="keywords"
+          size="mini"
+          ref="search_bar"
+          placeholder="输入关键字搜索"></el-input></el-col>
+
+      <el-table
+        :data="searchData(keywords)"
+        @sort-change="changeTableSort"
+        border
+        stripe
+        height="590px"
+        style="width: 100%">
+        <el-table-column
+          sortable
+          width="120"
+          label="所属项目1"
+          prop="class_1">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="120"
+          label="所属项目2"
+          prop="class_2">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="120"
+          label="所属项目3"
+          prop="class_3">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="150"
+          label="登录IP"
+          prop="login_ip">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="110"
+          label="SSH端口"
+          prop="ssh_port">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="150"
+          label="外网IP"
+          prop="external_IP">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="150"
+          label="内网IP_1"
+          prop="inner_ip_1">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="150"
+          label="内网IP_2"
+          prop="inner_ip_2">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="200"
+          label="root密码"
+          prop="root_password"
+          width="">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="200"
+          label="ubuntu密码"
+          prop="ubuntu_password">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="255"
+          label="数据库权限"
+          prop="db_password">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="250"
+          label="功能"
+          prop="description">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="140"
+          label="DELL管理IP"
+          prop="manage_ip">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="110"
+          label="服务器ID"
+          prop="server_id">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="250"
+          label="备注1"
+          prop="comment_1">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="250"
+          label="备注2"
+          prop="comment_2">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="120"
+          label="机房"
+          prop="IDC">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="120"
+          label="机柜"
+          prop="position"
+          width="">
+        </el-table-column>
+        <el-table-column
+          sortable
+          width="100"
+          label="使用人"
+          prop="owner"
+          width="">
+        </el-table-column>
+        <el-table-column
+          width="150"
+          fixed="right"
+          label="操作">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="primary"
+              @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+        <el-pagination
+          background
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          :page-sizes="[10, 25, 50, 100]"
+          :page-size="pageSize"
+          layout="sizes, total, prev, pager, next, jumper"
+          :total="search(keywords).length">
+        </el-pagination>
+
+    <!-- 对话框 -->
+        <el-dialog title="主机条目"
+                   :visible.sync="dialogFormVisible"
+                   :append-to-body="true"
+                   :before-close="handleClose">
+          <el-form :model="form">
+            <el-form-item label="所属项目1" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.class_1" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="所属项目2" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.class_2" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="所属项目3" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.class_3" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="登录IP" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.login_ip" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="SSH端口" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.ssh_port" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="外网IP" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.external_IP" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="内网IP_1" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.inner_ip_1" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="内网IP_2" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.inner_ip_2" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="root密码" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.root_password" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="ubuntu密码" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.ubuntu_password" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="数据库权限" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.db_password" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="功能" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.description" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="DELL管理IP" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.manage_ip" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="服务器ID" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.server_id" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="备注1" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.comment_1" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="备注2" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.comment_2" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="机房" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.IDC" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="机柜" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.position" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="使用人" :label-width="formLabelWidth">
+                <el-col :span="7">
+                    <el-input v-model="form.owner" autocomplete="on"></el-input>
+                </el-col>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="save">确 定</el-button>
+          </div>
+        </el-dialog>
+
+    </div>
+</template>
+
+
+{% endverbatim a %}
+<script src="/static/vue.min.js"></script>
+<script src="/static/vuex.js"></script>
+<!--
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+-->
+<script src="/static/index.js"></script>
+<script src="/static/axios.min.js"></script>
+    <!--
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"/>
+wget https://unpkg.com/element-ui/lib/theme-chalk/fonts/element-icons.woff
+-->
+<link rel="stylesheet" href="/static/index.css"/>
+
+<script>
+    var store = new Vuex.Store({
+      state: {
+        keywords: localStorage.getItem("keywords") || '',
+      },
+      mutations:{
+        set(state,info){
+          localStorage.setItem('keywords', info); //将传递的数据先保存到localStorage中
+        }
+      }
+    })
+
+    var vm = new Vue({
+        // 绑定对象
+        el:'#app',
+        data:{
+        },
+        methods:{
+        },
+        components: {
+            datatable: {
+                template: '#tmp1',
+                data() {
+                    return {
+                        tableData: [],
+                        keywords: this.$store.state.keywords,
+                        currentPage: 1,
+                        pageSize: 10,
+                        dialogFormVisible: false,
+                        form: {
+                            id: '',
+                            class_1: '',
+                            class_2: '',
+                            class_3: '',
+                            login_ip: '',
+                            ssh_port: '',
+                            external_IP: '',
+                            inner_ip_1: '',
+                            inner_ip_2: '',
+                            root_password: '',
+                            ubuntu_password: '',
+                            db_password: '',
+                            description: '',
+                            manage_ip: '',
+                            server_id: '',
+                            comment_1: '',
+                            comment_2: '',
+                            IDC: '',
+                            position: '',
+                            owner: ''
+                        },
+                        formLabelWidth: '25%'
+                    }
+                },
+                ready: function () {
+
+                },
+                methods: {
+                    searchData(keywords) {
+                        //处理分页显示
+                        let newList = this.search(keywords)
+                        let tableDataSlice = newList.slice(this.currentPage * this.pageSize - this.pageSize,
+                            this.currentPage * this.pageSize);
+                        if (tableDataSlice.length == 0){
+                            //当搜索栏为空自动切回第一页
+                            this.currentPage = 1
+                        }
+                        this.$store.commit('set',keywords)
+                        return tableDataSlice
+                    },
+                    search(keywords) {
+                        //数据搜索
+                        let newList = this.tableData.filter(item=>{
+                            if(item.login_ip.includes(keywords)){
+                                return true
+                            }
+                        });
+                        return newList
+                    },
+                    handleSizeChange(val) {
+                        //每页显示几行按钮
+                        this.pageSize = val
+                    },
+                    handleCurrentChange(val) {
+                        //跳转第几页按钮
+                        this.currentPage = val
+                    },
+                    handleClose(done) {
+                        //对话框关闭确认
+                        this.$confirm('确认关闭？')
+                          .then(_ => {
+                            done();
+                          })
+                          .catch(_ => {});
+                    },
+                    notify(code, msg){
+                        //消息提示
+                        if (code == 0){
+                            var title = '成功'
+                            var type = 'success'
+                        }else if (code == 1){
+                            var title = '错误'
+                            var type = 'error'
+                        }
+                        this.$notify({
+                          title: title,
+                          message: msg,
+                          type: type,
+                          offset: 37,
+                          showClose: false
+                        });
+                    },
+                    key_sort(column) {
+                        return function (obj1, obj2) {
+                            var val1 = obj1[column];
+                            var val2 = obj2[column];
+                            if (val1 < val2) {
+                                return -1;
+                            } else if (val1 > val2) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        }
+                    },
+                    changeTableSort(column){
+                        //排序按钮
+                        localStorage.setItem('column', JSON.stringify(column));
+                        if (! column.order){
+                            this.tableData = JSON.parse(localStorage.getItem("tableData"))
+                        }else {
+
+                            if (column.order === 'ascending') {
+                                this.tableData = this.tableData.sort(this.key_sort(column.prop))
+                            } else if (column.order === 'descending') {
+                                this.tableData = this.tableData.sort(this.key_sort(column.prop)).reverse()
+                            }
+                        }
+                    },
+                    post_data(url, data) {
+                        //axios异步请求
+                        var _this = this;
+                        axios({
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFtoken': '{{ csrf_token }}'
+                            },
+                            url: url,
+                            data: data
+                        })
+                        .then(function (response) {
+                            if (response.data.code == -1) {
+                                _this.tableData = response.data.tableData;
+                                if (data){
+                                    localStorage.setItem('tableData', JSON.stringify(_this.tableData))
+                                }
+                                _this.changeTableSort(JSON.parse(localStorage.getItem("column")))
+                            }
+                            if (response.data.code == 0) {
+                                _this.post_data('/server_table_data/',{})
+                                _this.notify(response.data.code, response.data.msg)
+                            }
+                            if (response.data.code == 1) {
+                                _this.notify(response.data.code, response.data.msg)
+                            }
+                        })
+                            .catch(function (error) {
+                                _this.notify(1, error)
+                            })
+                    },
+                    handleAdd(index, row) {
+                        //编辑按钮
+                        this.form = {
+                          id: '',
+                          task_name: '',
+                          task_desc: '',
+                          task_type: '',
+                          target: '',
+                          task_cmd: ''
+                        };
+                        this.dialogFormVisible = true
+                    },
+                    handleEdit(index, row) {
+                        //编辑按钮
+                        this.form = {
+                            id: row.id,
+                            class_1: row.class_1,
+                            class_2: row.class_2,
+                            class_3: row.class_3,
+                            login_ip: row.login_ip,
+                            ssh_port: row.ssh_port,
+                            external_IP: row.external_IP,
+                            inner_ip_1: row.inner_ip_1,
+                            inner_ip_2: row.inner_ip_2,
+                            root_password: row.root_password,
+                            ubuntu_password: row.ubuntu_password,
+                            db_password: row.db_password,
+                            description: row.description,
+                            manage_ip: row.manage_ip,
+                            server_id: row.server_id,
+                            comment_1: row.comment_1,
+                            comment_2: row.comment_2,
+                            IDC: row.IDC,
+                            position: row.position,
+                            owner: row.owner
+                        };
+                        this.dialogFormVisible = true
+                    },
+                    handleDelete(index, row) {
+                        //删除按钮
+                        this.$confirm('确认删除？')
+                          .then(_ => {
+                            data = { id: row.id };
+                            this.post_data('/task_table_del/',data)
+                          })
+                          .catch(_ => {});
+                    },
+                    save() {
+                        //添加按钮
+                        let data = {
+                            id: this.form.id,
+                            class_1: this.form.class_1,
+                            class_2: this.form.class_2,
+                            class_3: this.form.class_3,
+                            login_ip: this.form.login_ip,
+                            ssh_port: this.form.ssh_port,
+                            external_IP: this.form.external_IP,
+                            inner_ip_1: this.form.inner_ip_1,
+                            inner_ip_2: this.form.inner_ip_2,
+                            root_password: this.form.root_password,
+                            ubuntu_password: this.form.ubuntu_password,
+                            db_password: this.form.db_password,
+                            description: this.form.description,
+                            manage_ip: this.form.manage_ip,
+                            server_id: this.form.server_id,
+                            comment_1: this.form.comment_1,
+                            comment_2: this.form.comment_2,
+                            IDC: this.form.IDC,
+                            position: this.form.position,
+                            owner: this.form.owner,
+                        };
+                        this.post_data('/server_table_save/',data);
+                        this.dialogFormVisible = false
+                    }
+                },
+                created(){
+                    //数据函数加载完成后
+                    this.post_data('/server_table_data/',{})
+                },
+                mounted(){
+                    //网页完全显示后
+                    this.$refs.search_bar.focus()
+                    this.changeTableSort({prop: 'create_time', order: 'descending'});
+                },
+                store: store
+            }
+        }
+    })
+
+</script>
+
+
+
+{% endblock %}
